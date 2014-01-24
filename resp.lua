@@ -83,7 +83,7 @@ codex = {
 		if (size == -1) then
 			return nil
 		elseif (size == 0) then
-			return
+			return res
 		end
 
 		while (curr <= size) do

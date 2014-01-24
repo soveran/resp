@@ -18,6 +18,11 @@ assert_equal(client:call("GET", "bar"), nil)
 assert_equal(client:call("SET", "bar", "\r\n"), "OK")
 assert_equal(client:call("GET", "bar"), "\r\n")
 
+result = client:call("SMEMBERS", "baz")
+
+assert_equal(type(result), "table")
+assert_equal(#result, 0)
+
 assert_equal(client:call("MULTI"), "OK")
 assert_equal(client:call("PING"), "QUEUED")
 assert_equal(client:call("ECHO", "bar"), "QUEUED")
