@@ -55,14 +55,10 @@ local codex
 codex = {
 
 	-- RESP status
-	["+"] = function(sock)
-		return readline(sock)
-	end,
+	["+"] = readline,
 
 	-- RESP error
-	["-"] = function(sock)
-		return readline(sock)
-	end,
+	["-"] = readline,
 
 	-- RESP integer
 	[":"] = function(sock)
