@@ -150,7 +150,7 @@ local methods = {
 }
 
 local new = function(host, port)
-	self = setmetatable({}, {__index = methods})
+	local self = setmetatable({}, {__index = methods})
 
 	connect(self, host, port)
 
