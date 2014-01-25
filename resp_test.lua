@@ -1,4 +1,4 @@
-require("strict")
+require("pl.strict")
 
 local resp = require("resp")
 
