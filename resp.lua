@@ -2,7 +2,7 @@ local lsocket = require("lsocket")
 
 -- Establish the connection
 local connect = function(self, host, port)
-	sock = assert(lsocket.connect(host, port))
+	local sock = assert(lsocket.connect(host, port))
 
 	lsocket.select(nil, {sock})
 
