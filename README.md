@@ -7,7 +7,7 @@ Description
 -----------
 
 
-Lightweight [RESP][http://redis.io/topics/protocol] client that
+Lightweight [RESP](http://redis.io/topics/protocol) client that
 can be used for interacting with Redis servers.
 
 Usage
