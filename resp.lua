@@ -113,18 +113,18 @@ codex = {
 
 -- Send commands to Redis
 local write = function(sock, ...)
-	lsocket.select(nil, {socket})
+	lsocket.select(nil, {sock})
 
 	return assert(sock:send(encode(...)))
 end
 
 -- Read reply from Redis
-local read = function(socket)
-	lsocket.select({socket})
+local read = function(sock)
+	lsocket.select({sock})
 
-	local prefix = assert(socket:recv(1))
+	local prefix = assert(sock:recv(1))
 
-	return codex[prefix](socket) or nil
+	return codex[prefix](sock) or nil
 end
 
 -- Call Redis command and return the reply
