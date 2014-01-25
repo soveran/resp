@@ -124,7 +124,7 @@ local read = function(sock)
 
 	local prefix = assert(sock:recv(1))
 
-	return codex[prefix](sock) or nil
+	return codex[prefix](sock)
 end
 
 -- Call Redis command and return the reply
