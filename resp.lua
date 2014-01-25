@@ -76,6 +76,8 @@ codex = {
 			return ""
 		end
 
+		assert(size > 0)
+
 		local res = sock:recv(size)
 
 		discard_eol(sock)
