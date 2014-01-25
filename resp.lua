@@ -27,6 +27,10 @@ local encode = function(...)
 	return table.concat(result, "\r\n")
 end
 
+local discard_eol = function(sock)
+	assert(sock:recv(2))
+end
+
 -- Read until "\r\n"
 local readline = function(sock)
 	local res = {}
@@ -67,9 +71,18 @@ codex = {
 
 	-- RESP string
 	["$"] = function(sock)
-		local res = sock:recv(tonumber(readline(sock)))
+		local size = tonumber(readline(sock))
 
-		sock:recv(2)
+		if (size == -1) then
+			return nil
+		elseif (size == 0) then
+			discard_eol(sock)
+			return ""
+		end
+
+		local res = sock:recv(size)
+
+		discard_eol(sock)
 
 		return res
 	end,
@@ -130,7 +143,6 @@ local quit = function(self)
 		self.sock = nil
 	end
 end
-
 
 local methods = {
 	quit = quit,
