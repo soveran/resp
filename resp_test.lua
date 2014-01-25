@@ -1,3 +1,5 @@
+require("strict")
+
 local resp = require("resp")
 
 local client = resp.new("localhost", 6379)
