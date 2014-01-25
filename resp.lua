@@ -13,18 +13,18 @@ end
 
 -- Transform arguments to RESP
 local encode = function(...)
-	result = {}
+	local res = {}
 
-	table.insert(result, ("*" .. select("#", ...)))
+	table.insert(res, ("*" .. select("#", ...)))
 
 	for i, v in ipairs{...} do
-		table.insert(result, "$" .. #v)
-		table.insert(result, v)
+		table.insert(res, "$" .. #v)
+		table.insert(res, v)
 	end
 
-	table.insert(result, "\r\n")
+	table.insert(res, "\r\n")
 
-	return table.concat(result, "\r\n")
+	return table.concat(res, "\r\n")
 end
 
 local discard_eol = function(sock)
