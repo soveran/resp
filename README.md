@@ -13,11 +13,13 @@ can be used for interacting with Redis servers.
 Usage
 -----
 
-    local resp = require("resp")
-    local client = resp.new("localhost", 6379)
+```lua
+local resp = require("resp")
+local client = resp.new("localhost", 6379)
 
-    assert("OK" == client:call("SET", "foo", "42"))
-    assert("42" == client:call("GET", "foo"))
+assert("OK" == client:call("SET", "foo", "42"))
+assert("42" == client:call("GET", "foo"))
+```
 
 Installation
 ------------
