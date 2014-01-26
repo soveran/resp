@@ -50,6 +50,11 @@ local readstr = function(sock)
 	end
 end
 
+-- Read line as a number
+local readnum = function(sock)
+	return tonumber(readstr(sock))
+end
+
 local codex
 
 codex = {
@@ -61,13 +66,11 @@ codex = {
 	["-"] = readstr,
 
 	-- RESP integer
-	[":"] = function(sock)
-		return tonumber(readstr(sock))
-	end,
+	[":"] = readnum,
 
 	-- RESP string
 	["$"] = function(sock)
-		local size = tonumber(readstr(sock))
+		local size = readnum(sock)
 
 		if (size == -1) then
 			return nil
@@ -89,7 +92,7 @@ codex = {
 	["*"] = function(sock)
 		local res = {}
 		local curr = 1
-		local size = tonumber(readstr(sock))
+		local size = readnum(sock)
 
 		if (size == -1) then
 			return nil
