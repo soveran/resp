@@ -32,7 +32,7 @@ local discard_eol = function(sock)
 end
 
 -- Read until "\r\n"
-local readline = function(sock)
+local readstr = function(sock)
 	local res = {}
 	local ch = sock:recv(1)
 
@@ -55,19 +55,19 @@ local codex
 codex = {
 
 	-- RESP status
-	["+"] = readline,
+	["+"] = readstr,
 
 	-- RESP error
-	["-"] = readline,
+	["-"] = readstr,
 
 	-- RESP integer
 	[":"] = function(sock)
-		return tonumber(readline(sock))
+		return tonumber(readstr(sock))
 	end,
 
 	-- RESP string
 	["$"] = function(sock)
-		local size = tonumber(readline(sock))
+		local size = tonumber(readstr(sock))
 
 		if (size == -1) then
 			return nil
@@ -89,7 +89,7 @@ codex = {
 	["*"] = function(sock)
 		local res = {}
 		local curr = 1
-		local size = tonumber(readline(sock))
+		local size = tonumber(readstr(sock))
 
 		if (size == -1) then
 			return nil
