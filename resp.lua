@@ -145,13 +145,39 @@ local quit = function(self)
 	end
 end
 
+-- Buffer commands
+local queue = function(self, ...)
+	table.insert(self.buff, {...})
+end
+
+-- Send commands to Redis
+local commit = function(self)
+	local res = {}
+
+	for i, v in ipairs(self.buff) do
+		assert(write(self.sock, unpack(v)))
+	end
+
+	for i, v in ipairs(self.buff) do
+		table.insert(res, read(self.sock))
+	end
+
+	self.buff = {}
+
+	return res
+end
+
 local methods = {
 	quit = quit,
 	call = call,
+	queue = queue,
+	commit = commit,
 }
 
 local new = function(host, port)
 	local self = setmetatable({}, {__index = methods})
+
+	self.buff = {}
 
 	connect(self, host, port)
 
