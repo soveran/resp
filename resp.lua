@@ -154,11 +154,11 @@ end
 local commit = function(self)
 	local res = {}
 
-	for i, v in ipairs(self.buff) do
+	for _, v in ipairs(self.buff) do
 		assert(write(self.sock, unpack(v)))
 	end
 
-	for i, v in ipairs(self.buff) do
+	for _, _ in ipairs(self.buff) do
 		table.insert(res, read(self.sock))
 	end
 
