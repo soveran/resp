@@ -27,26 +27,61 @@ local encode = function(...)
 	return table.concat(res, "\r\n")
 end
 
+-- Low level read from socket
+local recv = function(sock, size)
+	lsocket.select({sock})
+	return assert(sock:recv(size))
+end
+
+-- Low level write to socket
+local send = function(sock, str)
+	lsocket.select(nil, {sock})
+	return assert(sock:send(str))
+end
+
+-- Read size bytes from socket
+local read = function(sock, size)
+	local res = ""
+	local str
+
+	repeat
+		str = recv(sock, size - #res)
+		res = res .. str
+	until #res == size
+
+	return res
+end
+
+-- Write str to socket
+local write = function(sock, str)
+	local size = send(sock, str)
+
+	while size < #str do
+		size = size + send(sock, str:sub(size, -1))
+	end
+end
+
 local discard_eol = function(sock)
-	assert(sock:recv(2))
+	read(sock, 2)
 end
 
 -- Read until "\r\n"
 local readstr = function(sock)
 	local res = {}
-	local ch = sock:recv(1)
+	local ch = read(sock, 1)
 
-	while (ch) do
+	while ch do
 		if (ch == "\r") then
 
 			-- Discard "\n"
-			assert(sock:recv(1))
+			read(sock, 1)
 
 			return table.concat(res)
 		end
 
 		table.insert(res, ch)
-		ch = sock:recv(1)
+
+		ch = read(sock, 1)
 	end
 end
 
@@ -55,8 +90,22 @@ local readnum = function(sock)
 	return tonumber(readstr(sock))
 end
 
+-- Forward declaration
 local codex
 
+-- Send commands to Redis
+local write_command = function(sock, ...)
+	write(sock, encode(...))
+end
+
+-- Read reply from Redis
+local read_reply = function(sock)
+	local prefix = read(sock, 1)
+
+	return codex[prefix](sock)
+end
+
+-- RESP parser
 codex = {
 
 	-- RESP status
@@ -81,7 +130,7 @@ codex = {
 
 		assert(size > 0)
 
-		local res = sock:recv(size)
+		local res = read(sock, size)
 
 		discard_eol(sock)
 
@@ -101,10 +150,7 @@ codex = {
 		end
 
 		while (curr <= size) do
-			local prefix = sock:recv(1)
-
-			table.insert(res, codex[prefix](sock))
-
+			table.insert(res, read_reply(sock))
 			curr = curr + 1
 		end
 
@@ -112,27 +158,11 @@ codex = {
 	end,
 }
 
--- Send commands to Redis
-local write = function(sock, ...)
-	lsocket.select(nil, {sock})
-
-	return assert(sock:send(encode(...)))
-end
-
--- Read reply from Redis
-local read = function(sock)
-	lsocket.select({sock})
-
-	local prefix = assert(sock:recv(1))
-
-	return codex[prefix](sock)
-end
-
 -- Call Redis command and return the reply
 local call = function(self, ...)
-	assert(write(self.sock, ...))
+	write_command(self.sock, ...)
 
-	return read(self.sock)
+	return read_reply(self.sock)
 end
 
 -- Close the connection
@@ -155,11 +185,11 @@ local commit = function(self)
 	local res = {}
 
 	for _, v in ipairs(self.buff) do
-		assert(write(self.sock, unpack(v)))
+		write_command(self.sock, unpack(v))
 	end
 
 	for _, _ in ipairs(self.buff) do
-		table.insert(res, read(self.sock))
+		table.insert(res, read_reply(self.sock))
 	end
 
 	self.buff = {}
