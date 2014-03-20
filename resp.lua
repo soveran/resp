@@ -57,7 +57,7 @@ local write = function(sock, str)
 	local size = send(sock, str)
 
 	while size < #str do
-		size = size + send(sock, str:sub(size, -1))
+		size = size + send(sock, str:sub(size))
 	end
 end
 
