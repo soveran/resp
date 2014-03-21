@@ -1,13 +1,16 @@
 local lsocket = require("lsocket")
 
+local lsocket_select = lsocket.select
+local lsocket_connect = lsocket.connect
+
 local insert = table.insert
 local concat = table.concat
 
 -- Establish the connection
 local connect = function(self, host, port)
-	local sock = assert(lsocket.connect(host, port))
+	local sock = assert(lsocket_connect(host, port))
 
-	lsocket.select(nil, {sock})
+	lsocket_select(nil, {sock})
 
 	assert(sock:status())
 
@@ -32,13 +35,13 @@ end
 
 -- Low level read from socket
 local recv = function(sock, size)
-	lsocket.select({sock})
+	lsocket_select({sock})
 	return assert(sock:recv(size))
 end
 
 -- Low level write to socket
 local send = function(sock, str)
-	lsocket.select(nil, {sock})
+	lsocket_select(nil, {sock})
 	return assert(sock:send(str))
 end
 
