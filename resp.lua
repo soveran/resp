@@ -1,5 +1,8 @@
 local lsocket = require("lsocket")
 
+local insert = table.insert
+local concat = table.concat
+
 -- Establish the connection
 local connect = function(self, host, port)
 	local sock = assert(lsocket.connect(host, port))
@@ -15,16 +18,16 @@ end
 local encode = function(...)
 	local res = {}
 
-	table.insert(res, ("*" .. select("#", ...)))
+	insert(res, ("*" .. select("#", ...)))
 
 	for i, v in ipairs{...} do
-		table.insert(res, "$" .. #v)
-		table.insert(res, v)
+		insert(res, "$" .. #v)
+		insert(res, v)
 	end
 
-	table.insert(res, "\r\n")
+	insert(res, "\r\n")
 
-	return table.concat(res, "\r\n")
+	return concat(res, "\r\n")
 end
 
 -- Low level read from socket
@@ -44,6 +47,12 @@ local read = function(sock, size)
 	local res = ""
 	local str
 
+	-- NOTE: it might seem logical to use a table to collect
+	-- the values and concat at the end, but in reality the
+	-- case where what we read is what we get happens majority
+	-- of the time, so the loop doesn't execute in that scenario
+	-- at all, and therefore we avoid a string concat when we
+	-- encounter the common case.
 	repeat
 		str = recv(sock, size - #res)
 		res = res .. str
@@ -76,10 +85,10 @@ local readstr = function(sock)
 			-- Discard "\n"
 			read(sock, 1)
 
-			return table.concat(res)
+			return concat(res)
 		end
 
-		table.insert(res, ch)
+		insert(res, ch)
 
 		ch = read(sock, 1)
 	end
@@ -150,7 +159,7 @@ codex = {
 		end
 
 		while (curr <= size) do
-			table.insert(res, read_reply(sock))
+			insert(res, read_reply(sock))
 			curr = curr + 1
 		end
 
@@ -177,7 +186,7 @@ end
 
 -- Buffer commands
 local queue = function(self, ...)
-	table.insert(self.buff, {...})
+	insert(self.buff, {...})
 end
 
 -- Send commands to Redis
@@ -189,7 +198,7 @@ local commit = function(self)
 	end
 
 	for _, _ in ipairs(self.buff) do
-		table.insert(res, read_reply(self.sock))
+		insert(res, read_reply(self.sock))
 	end
 
 	self.buff = {}
