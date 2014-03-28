@@ -209,15 +209,17 @@ local commit = function(self)
 	return res
 end
 
-local methods = {
-	quit = quit,
-	call = call,
-	queue = queue,
-	commit = commit,
+local metatable = {
+	__index = {
+		quit = quit,
+		call = call,
+		queue = queue,
+		commit = commit,
+	}
 }
 
 local new = function(host, port)
-	local self = setmetatable({}, {__index = methods})
+	local self = setmetatable({}, metatable)
 
 	self.buff = {}
 
