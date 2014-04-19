@@ -43,6 +43,37 @@ assert_equal(result[1], "foo")
 assert_equal(result[2], "bar")
 ```
 
+MONITOR and SUBSCRIBE
+---------------------
+
+For commands like `MONITOR` and `SUBSCRIBE`, you can keep reading
+messages from the server:
+
+```lua
+local resp = require("resp")
+local c1 = resp.new("localhost", 6379)
+local c2 = resp.new("localhost", 6379)
+
+-- Subscribe to channel "foo"
+c1:call("SUBSCRIBE", "foo")
+
+-- Publish to channel "foo"
+c2:call("PUBLISH", "foo", "hello")
+c2:call("PUBLISH", "foo", "hello")
+
+r1 = c1:read()
+r2 = c1:read()
+
+-- Messages have type, channel and content
+assert_equal(r1[1], "message")
+assert_equal(r1[2], "foo")
+assert_equal(r1[3], "hello")
+
+assert_equal(r2[1], "message")
+assert_equal(r2[2], "foo")
+assert_equal(r2[3], "world")
+```
+
 Installation
 ------------
 
