@@ -90,6 +90,31 @@ assert_equal(r1[2], "c1-bar")
 assert_equal(r2[1], "c2-foo")
 assert_equal(r2[2], "c2-bar")
 
+c1:quit()
+c2:quit()
+
+-- pubsub
+
+local c1 = resp.new("localhost", 6379)
+
+c1:call("SUBSCRIBE", "foo")
+
+client:call("PUBLISH", "foo", "hello")
+client:call("PUBLISH", "foo", "world")
+
+result = c1:read()
+
+assert_equal(result[1], "message")
+assert_equal(result[2], "foo")
+assert_equal(result[3], "hello")
+
+result = c1:read()
+
+assert_equal(result[1], "message")
+assert_equal(result[2], "foo")
+assert_equal(result[3], "world")
+
+c1:quit()
 client:quit()
 
 io.write("\r\n")

@@ -33,31 +33,25 @@ local encode = function(...)
 	return concat(res, "\r\n")
 end
 
--- Low level read from socket
-local recv = function(sock, size)
+-- Try to read size bytes from socket
+local _recv = function(sock, size)
 	lsocket_select({sock})
 	return assert(sock:recv(size))
 end
 
--- Low level write to socket
-local send = function(sock, str)
+-- Try to send size bytes to socket
+local _send = function(sock, str)
 	lsocket_select(nil, {sock})
 	return assert(sock:send(str))
 end
 
 -- Read size bytes from socket
-local read = function(sock, size)
+local recv = function(sock, size)
 	local res = ""
 	local str
 
-	-- NOTE: it might seem logical to use a table to collect
-	-- the values and concat at the end, but in reality the
-	-- case where what we read is what we get happens majority
-	-- of the time, so the loop doesn't execute in that scenario
-	-- at all, and therefore we avoid a string concat when we
-	-- encounter the common case.
 	repeat
-		str = recv(sock, size - #res)
+		str = _recv(sock, size - #res)
 		res = res .. str
 	until #res == size
 
@@ -65,35 +59,35 @@ local read = function(sock, size)
 end
 
 -- Write str to socket
-local write = function(sock, str)
-	local size = send(sock, str)
+local send = function(sock, str)
+	local size = _send(sock, str)
 
 	while size < #str do
-		size = size + send(sock, str:sub(size))
+		size = size + _send(sock, str:sub(size))
 	end
 end
 
 local discard_eol = function(sock)
-	read(sock, 2)
+	recv(sock, 2)
 end
 
 -- Read until "\r\n"
 local readstr = function(sock)
 	local res = {}
-	local ch = read(sock, 1)
+	local ch = recv(sock, 1)
 
 	while ch do
 		if (ch == "\r") then
 
 			-- Discard "\n"
-			read(sock, 1)
+			recv(sock, 1)
 
 			return concat(res)
 		end
 
 		insert(res, ch)
 
-		ch = read(sock, 1)
+		ch = recv(sock, 1)
 	end
 end
 
@@ -106,15 +100,17 @@ end
 local codex
 
 -- Send commands to Redis
-local write_command = function(sock, ...)
-	write(sock, encode(...))
+local send_command = function(sock, ...)
+	send(sock, encode(...))
 end
 
 -- Read reply from Redis
 local read_reply = function(sock)
-	local prefix = read(sock, 1)
+	return codex[recv(sock, 1)](sock)
+end
 
-	return codex[prefix](sock)
+local read = function(self)
+	return read_reply(self.sock)
 end
 
 -- RESP parser
@@ -142,7 +138,7 @@ codex = {
 
 		assert(size > 0)
 
-		local res = read(sock, size)
+		local res = recv(sock, size)
 
 		discard_eol(sock)
 
@@ -172,7 +168,7 @@ codex = {
 
 -- Call Redis command and return the reply
 local call = function(self, ...)
-	write_command(self.sock, ...)
+	send_command(self.sock, ...)
 
 	return read_reply(self.sock)
 end
@@ -197,7 +193,7 @@ local commit = function(self)
 	local res = {}
 
 	for _, v in ipairs(self.buff) do
-		write_command(self.sock, unpack(v))
+		send_command(self.sock, unpack(v))
 	end
 
 	for _, _ in ipairs(self.buff) do
@@ -213,6 +209,7 @@ local metatable = {
 	__index = {
 		quit = quit,
 		call = call,
+		read = read,
 		queue = queue,
 		commit = commit,
 	}
