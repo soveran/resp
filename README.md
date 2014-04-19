@@ -59,7 +59,7 @@ c1:call("SUBSCRIBE", "foo")
 
 -- Publish to channel "foo"
 c2:call("PUBLISH", "foo", "hello")
-c2:call("PUBLISH", "foo", "hello")
+c2:call("PUBLISH", "foo", "world")
 
 r1 = c1:read()
 r2 = c1:read()
