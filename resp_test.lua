@@ -9,6 +9,9 @@ local assert_equal = function(a, b)
 	io.write(".")
 end
 
+-- RESP encoding
+assert_equal("*1\r\n$3\r\nFOO\r\n\r\n", resp.encode("FOO"))
+
 -- RESP status
 assert_equal(client:call("SELECT", "3"), "OK")
 assert_equal(client:call("FLUSHDB"), "OK")
@@ -115,6 +118,5 @@ assert_equal(result[2], "foo")
 assert_equal(result[3], "world")
 
 c1:quit()
-client:quit()
 
 io.write("\r\n")

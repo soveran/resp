@@ -74,6 +74,18 @@ assert_equal(r2[2], "foo")
 assert_equal(r2[3], "world")
 ```
 
+Encoding
+--------
+
+Aside from creating a client, resp.lua can also be used to
+encode any message with the RESP protocol:
+
+```lua
+local resp = require("resp")
+
+assert_equal("*1\r\n$3\r\nFOO\r\n\r\n", resp.encode("FOO"))
+```
+
 Installation
 ------------
 
