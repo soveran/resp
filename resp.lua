@@ -227,4 +227,5 @@ end
 
 return {
 	new = new,
+	encode = encode,
 }
