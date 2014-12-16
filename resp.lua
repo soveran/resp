@@ -193,7 +193,7 @@ local commit = function(self)
 	local res = {}
 
 	for _, v in ipairs(self.buff) do
-		send_command(self.sock, unpack(v))
+		send_command(self.sock, table.unpack(v))
 	end
 
 	for _, _ in ipairs(self.buff) do
