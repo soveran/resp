@@ -5,6 +5,7 @@ local lsocket_connect = lsocket.connect
 
 local insert = table.insert
 local concat = table.concat
+local unpack = table.unpack or unpack
 
 -- Establish the connection
 local connect = function(self, host, port)
@@ -193,7 +194,7 @@ local commit = function(self)
 	local res = {}
 
 	for _, v in ipairs(self.buff) do
-		send_command(self.sock, table.unpack(v))
+		send_command(self.sock, unpack(v))
 	end
 
 	for _, _ in ipairs(self.buff) do
